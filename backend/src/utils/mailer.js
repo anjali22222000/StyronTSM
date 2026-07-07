@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import Brevo from "@getbrevo/brevo";
+import * as Brevo from "@getbrevo/brevo";
 
 dotenv.config();
 
