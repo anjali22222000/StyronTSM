@@ -1,6 +1,6 @@
 import { pool } from "../config/db.js";
 import { buildQuotationPdf } from "../utils/pdfQuotation.js";
-import { transporter } from "../utils/mailer.js";
+import { sendNotificationEmail } from "../utils/mailer.js";
 import { notifyAdmins } from "../utils/notifications.js";
 import { streamExcel } from "../utils/excelExport.js";
 
@@ -372,8 +372,7 @@ export async function emailQuotationPdf(req, res) {
   `;
 
   try {
-    await transporter.sendMail({
-      from: fromHeader(),
+    await sendNotificationEmail({
       to: quotation.customer_email,
       subject: `Your Quotation from Styron TSM — ${quotation.quotation_number}`,
       html,
@@ -381,7 +380,6 @@ export async function emailQuotationPdf(req, res) {
         {
           filename,
           content: pdfBuffer,
-          contentType: "application/pdf",
         },
       ],
     });
@@ -430,14 +428,17 @@ export async function generateAndEmail(req, res) {
     });
 
     const html = buildEmailHtml(record.quotation, validTill);
-
-    await transporter.sendMail({
-      from: fromHeader(),
-      to: record.quotation.customer_email,
-      subject: `Your Quotation from Styron TSM — ${quotationNumber}`,
-      html,
-      attachments: [{ filename, content: pdfBuffer, contentType: "application/pdf" }],
-    });
+await sendNotificationEmail({
+  to: record.quotation.customer_email,
+  subject: `Your Quotation from Styron TSM — ${quotationNumber}`,
+  html,
+  attachments: [
+    {
+      filename,
+      content: pdfBuffer,
+    },
+  ],
+});
 
     await pool.query("UPDATE quotations SET status = 'sent', email_sent_at = NOW() WHERE id = ?", [quotationId]);
     emailSent = true;

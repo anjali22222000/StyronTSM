@@ -18,10 +18,10 @@ async function start() {
   }
 
   try {
-    await verifyMailer();
-    console.log("✅ Gmail SMTP connected.");
+   await verifyMailer();
+console.log("✅ Brevo Email API connected.");
   } catch (err) {
-    console.error("⚠️  Gmail SMTP verification failed:", err.message);
+   console.error("⚠️ Brevo Email API verification failed:", err.message);
     console.error("   OTP emails will not send until GMAIL_USER / GMAIL_APP_PASSWORD are fixed.");
     // Not fatal — server still starts so the rest of the app stays usable.
   }

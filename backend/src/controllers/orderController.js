@@ -2,7 +2,6 @@ import { pool } from "../config/db.js";
 import { generateOrderNumber } from "../utils/slug.js";
 import { notifyAdmins, notifyUser } from "../utils/notifications.js";
 import { sendNotificationEmail } from "../utils/mailer.js";
-import { transporter } from "../utils/mailer.js";
 import { streamInvoicePdf, buildInvoicePdf } from "../utils/pdfInvoice.js";
 import { getRenderedTemplate } from "./emailTemplateController.js";
 
@@ -41,13 +40,17 @@ async function autoGenerateAndEmailInvoice(order) {
     });
 
     if (template) {
-      await transporter.sendMail({
-        from: fromHeader(),
-        to: customerEmail,
-        subject: template.subject,
-        html: template.html,
-        attachments: [{ filename: `${invoiceNumber}.pdf`, content: pdfBuffer, contentType: "application/pdf" }],
-      });
+     await sendNotificationEmail({
+    to: customerEmail,
+    subject: template.subject,
+    html: template.html,
+    attachments: [
+        {
+            filename: `${invoiceNumber}.pdf`,
+            content: pdfBuffer,
+        },
+    ],
+});
       await pool.query("UPDATE invoices SET emailed_at = NOW() WHERE invoice_number = ?", [invoiceNumber]);
     }
   } catch (err) {
