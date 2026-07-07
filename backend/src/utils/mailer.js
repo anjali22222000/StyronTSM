@@ -5,23 +5,27 @@ dotenv.config();
 
 export const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
-  port: 587,
-  secure: false, // true only for port 465
+  port: 465,
+  secure: true,
   auth: {
     user: process.env.GMAIL_USER,
     pass: process.env.GMAIL_APP_PASSWORD,
   },
-  connectionTimeout: 30000,
-  greetingTimeout: 30000,
-  socketTimeout: 30000,
-  tls: {
-    rejectUnauthorized: false,
-  },
+  connectionTimeout: 60000,
+  greetingTimeout: 60000,
+  socketTimeout: 60000,
 });
 
-// Verify SMTP connection
 export async function verifyMailer() {
-  await transporter.verify();
+  try {
+    await transporter.verify();
+    console.log("✅ Gmail SMTP connected.");
+  } catch (err) {
+    console.error("========== SMTP ERROR ==========");
+    console.error(err);
+    console.error("================================");
+    throw err;
+  }
 }
 
 const fromHeader = () =>
@@ -37,11 +41,14 @@ export async function sendOtpEmail({ to, name, otp, purpose }) {
 
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 8px;">
-      <h2 style="color: #1f2937;">Styron TSM</h2>
+      <h2 style="color:#1f2937;">Styron TSM</h2>
+
       <p>Hi ${name || "there"},</p>
-      <p>Use the code below to ${purposeLabel}. This code expires in ${
-        process.env.OTP_EXPIRY_MINUTES || 10
-      } minutes.</p>
+
+      <p>
+        Use the code below to ${purposeLabel}. This code expires in
+        ${process.env.OTP_EXPIRY_MINUTES || 10} minutes.
+      </p>
 
       <div style="
         font-size:32px;
